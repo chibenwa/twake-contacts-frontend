@@ -2,6 +2,7 @@ import { setupStore } from '@common/app/store'
 import { DEFAULT_ADDRESS_BOOK_ID } from '@common/features/Contacts/constants'
 import { UserState } from '@common/features/User/UserSlice'
 import en from '@common/locales/en.json'
+import { TwakeMuiThemeProvider } from '@linagora/twake-mui'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -60,26 +61,31 @@ function renderPage(initialEntries: string[]): ReturnType<typeof render> {
 
   return render(
     <Provider store={store}>
-      <I18n dictRequire={() => en} lang="en">
-        <MemoryRouter initialEntries={initialEntries}>
-          <Routes>
-            <Route path="/contacts/new" element={<CreateContactPage />} />
-            <Route
-              path="/contacts/:addressBookId/new"
-              element={<CreateContactPage />}
-            />
-            <Route
-              path="/contacts/:addressBookId/:contactId/edit"
-              element={<EditContactPage />}
-            />
-            <Route path="/contacts/:addressBookId" element={<div>Book</div>} />
-            <Route
-              path="/contacts/:addressBookId/:contactId"
-              element={<div>Contact</div>}
-            />
-          </Routes>
-        </MemoryRouter>
-      </I18n>
+      <TwakeMuiThemeProvider>
+        <I18n dictRequire={() => en} lang="en">
+          <MemoryRouter initialEntries={initialEntries}>
+            <Routes>
+              <Route path="/contacts/new" element={<CreateContactPage />} />
+              <Route
+                path="/contacts/:addressBookId/new"
+                element={<CreateContactPage />}
+              />
+              <Route
+                path="/contacts/:addressBookId/:contactId/edit"
+                element={<EditContactPage />}
+              />
+              <Route
+                path="/contacts/:addressBookId"
+                element={<div>Book</div>}
+              />
+              <Route
+                path="/contacts/:addressBookId/:contactId"
+                element={<div>Contact</div>}
+              />
+            </Routes>
+          </MemoryRouter>
+        </I18n>
+      </TwakeMuiThemeProvider>
     </Provider>
   )
 }
@@ -183,9 +189,7 @@ describe('EditContactPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
     const dialog = screen.getByRole('dialog')
-    expect(
-      within(dialog).getByText('Delete this contact?')
-    ).toBeInTheDocument()
+    expect(within(dialog).getByText('Delete this contact?')).toBeInTheDocument()
     expect(within(dialog).getByText('AR')).toBeInTheDocument()
     expect(within(dialog).getByText('Alice Roche')).toBeInTheDocument()
     expect(within(dialog).getByText('alice@example.com')).toBeInTheDocument()

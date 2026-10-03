@@ -164,9 +164,7 @@ export function normalizeAddressBook(raw: DavAddressBookItem): AddressBook {
       !isReadOnlyShare &&
       acl.some(
         p =>
-          p === 'dav:write' ||
-          p === '{DAV:}write-content' ||
-          p === '{DAV:}bind'
+          p === 'dav:write' || p === '{DAV:}write-content' || p === '{DAV:}bind'
       )
   }
 }

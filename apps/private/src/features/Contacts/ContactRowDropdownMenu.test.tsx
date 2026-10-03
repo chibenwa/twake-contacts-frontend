@@ -32,10 +32,9 @@ describe('ContactRowDropdownMenu', () => {
   it('disables email based actions when the contact has no email', () => {
     renderMenu({ id: 'c1', displayName: 'Bob Added', emails: [] })
 
-    expect(screen.getByRole('menuitem', { name: 'Send email' })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    )
+    expect(
+      screen.getByRole('menuitem', { name: 'Send email' })
+    ).toHaveAttribute('aria-disabled', 'true')
     expect(
       screen.getByRole('menuitem', { name: 'Create event' })
     ).toHaveAttribute('aria-disabled', 'true')

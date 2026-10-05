@@ -151,8 +151,8 @@ export function normalizeAddressBook(raw: DavAddressBookItem): AddressBook {
   const userId = href?.split('/').at(-2) ?? ''
   const acl = raw['dav:acl'] ?? []
   // dav:acl is the book's own ACL; for a delegated book the sharee's rights are in dav:share-access
-  const isReadOnlyShare = READ_ONLY_SHARE_ACCESSES.includes(
-    raw['dav:share-access'] ?? -1
+  const isReadOnlyShare = READ_ONLY_SHARE_ACCESSES.some(
+    access => access === raw['dav:share-access']
   )
   return {
     id,

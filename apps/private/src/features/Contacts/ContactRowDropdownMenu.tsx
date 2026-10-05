@@ -54,6 +54,7 @@ export const ContactRowDropdownMenu: React.FC<ContactRowDropdownMenuProps> = ({
 
   const handleSendMail = (event: React.MouseEvent): void => {
     event.stopPropagation()
+    onClose()
     if (!firstEmail) return
 
     openMailComposer(firstEmail, { workplaceFqdn })
@@ -61,6 +62,7 @@ export const ContactRowDropdownMenu: React.FC<ContactRowDropdownMenuProps> = ({
 
   const handleOpenChat = (event: React.MouseEvent): void => {
     event.stopPropagation()
+    onClose()
     if (!chatTarget) return
 
     openChat(chatTarget, { workplaceFqdn })
@@ -68,6 +70,7 @@ export const ContactRowDropdownMenu: React.FC<ContactRowDropdownMenuProps> = ({
 
   const handleCreateEvent = (event: React.MouseEvent): void => {
     event.stopPropagation()
+    onClose()
     if (!firstEmail) return
 
     openCalendarEvent(firstEmail, {
@@ -82,7 +85,7 @@ export const ContactRowDropdownMenu: React.FC<ContactRowDropdownMenuProps> = ({
       onClose={handleMenuClose}
       onClick={e => e.stopPropagation()}
     >
-      <MenuItem onClick={handleSendMail}>
+      <MenuItem onClick={handleSendMail} disabled={!firstEmail}>
         <ListItemIcon>
           <Icon icon={EmailOpen} />
         </ListItemIcon>
@@ -96,7 +99,7 @@ export const ContactRowDropdownMenu: React.FC<ContactRowDropdownMenuProps> = ({
           <ListItemText>{t('contacts.menu.openChat')}</ListItemText>
         </MenuItem>
       )}
-      <MenuItem onClick={handleCreateEvent}>
+      <MenuItem onClick={handleCreateEvent} disabled={!firstEmail}>
         <ListItemIcon>
           <Icon icon={CalendarToday} />
         </ListItemIcon>

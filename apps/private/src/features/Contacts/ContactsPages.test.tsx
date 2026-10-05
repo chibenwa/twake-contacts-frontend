@@ -49,7 +49,14 @@ const renderContacts = (path: string): ReturnType<typeof render> =>
               contactsCount: 1,
               acl: [],
               canWrite: true,
-              contacts: [{ id: 'c4', displayName: 'My Contact', emails: [] }]
+              contacts: [
+                {
+                  id: 'c4',
+                  displayName: 'My Contact',
+                  emails: [],
+                  categories: []
+                }
+              ]
             },
             book2: {
               id: 'book2',
@@ -116,6 +123,17 @@ const renderContacts = (path: string): ReturnType<typeof render> =>
   )
 
 describe('AddressBookPage', () => {
+  it('shows a not found message for an unknown address book', () => {
+    renderContacts('/contacts/deleted-book')
+
+    expect(screen.getByText('Address book not found')).toBeInTheDocument()
+    expect(screen.queryByText('No contacts yet')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back' })).toHaveAttribute(
+      'href',
+      '/contacts'
+    )
+  })
+
   it('lists contacts from every address book on My contacts', () => {
     renderContacts('/contacts')
 
@@ -212,6 +230,12 @@ describe('ContactPage', () => {
     renderContacts('/contacts/book1/unknown')
 
     expect(screen.getByText('Contact not found')).toBeInTheDocument()
+  })
+
+  it('does not render a categories row for a contact without categories', () => {
+    renderContacts('/contacts/contacts/c4')
+
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
   })
 
   it('links back to main page for hidden address books', () => {

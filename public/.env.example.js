@@ -28,7 +28,11 @@ var MAIL_SPA_URL = 'https://mail.example.com';
 //   {workplaceFqdn}           - full workplace FQDN (e.g. alice.twake.example.com)
 //   {workplaceFqdn.localpart} - first label of FQDN (e.g. alice)
 //   {workplaceFqdn.domain}    - FQDN without first label (e.g. twake.example.com)
-//   {target}                  - target user (Matrix ID or email), URL-encoded
+//   {target}                  - target user (Matrix localpart or email)
+//
+// When the contact stores a full Matrix ID ("@user:server"), the "@{target}"
+// part of the template, including any ":server" suffix, is replaced by that
+// full Matrix ID.
 //
 // Example:
 //   var CHAT_SPA_URL = 'https://{workplaceFqdn.localpart}-chat.{workplaceFqdn.domain}/#/bridge/web/#/chat/@{target}:{workplaceFqdn.domain}';

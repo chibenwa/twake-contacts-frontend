@@ -12,12 +12,12 @@ import {
 } from '@linagora/twake-mui'
 import {
   generateMailComposerUrl,
-  generateCalendarEventUrl,
-  resolveChatSpaUrl
+  generateCalendarEventUrl
 } from '@linagora/twake-utils'
 import React from 'react'
 import { useI18n } from 'twake-i18n'
 import { useAppSelector } from '@common/app/hooks'
+import { resolveChatUrl } from '@common/utils/chatSpaUrl'
 import { ContactRowActions } from './ContactRowActions'
 import { getInitials } from './getInitials'
 
@@ -71,14 +71,9 @@ export const ContactCell: React.FC<ContactCellProps> = ({
               workplaceFqdnFallback: window.WORKPLACE_FQDN_FALLBACK
             })
           : null
-      const chatUrl =
-        chatTarget && window.CHAT_SPA_URL
-          ? resolveChatSpaUrl(window.CHAT_SPA_URL, {
-              target: chatTarget,
-              workplaceFqdn,
-              workplaceFqdnFallback: window.WORKPLACE_FQDN_FALLBACK
-            })
-          : null
+      const chatUrl = chatTarget
+        ? resolveChatUrl(window.CHAT_SPA_URL, chatTarget, { workplaceFqdn })
+        : null
 
       const hasActions = mailUrl ?? calendarUrl ?? chatUrl
 

@@ -10,6 +10,8 @@ import { VirtuosoMockContext } from '@linagora/twake-mui'
 import I18n from 'twake-i18n'
 import { AddressBookPage } from './AddressBookPage'
 import { ContactPage } from './ContactPage'
+import { CreateContactPage } from './CreateContactPage'
+import { EditContactPage } from './EditContactPage'
 
 jest.mock('@common/features/Contacts/ContactsDao', () => ({
   ...jest.requireActual('@common/features/Contacts/ContactsDao'),
@@ -36,6 +38,11 @@ const renderWithStore = (
               <Route
                 path="/contacts/:addressBookId/:contactId"
                 element={<ContactPage />}
+              />
+              <Route path="/contacts/new" element={<CreateContactPage />} />
+              <Route
+                path="/contacts/:addressBookId/:contactId/edit"
+                element={<EditContactPage />}
               />
             </Routes>
           </MemoryRouter>
@@ -297,22 +304,43 @@ describe('before the address books are loaded', () => {
       setupStore({ user: { userData: { openpaasId: 'u1' } } as UserState })
     )
 
-  it('does not show the empty state on My contacts', () => {
-    renderBeforeLoad('/contacts')
+  const hasSkeleton = (container: HTMLElement): boolean =>
+    container.querySelector('.MuiSkeleton-root') !== null
 
+  it('shows skeletons instead of the empty state on My contacts', () => {
+    const { container } = renderBeforeLoad('/contacts')
+
+    expect(hasSkeleton(container)).toBe(true)
     expect(screen.queryByText('No contacts yet')).not.toBeInTheDocument()
   })
 
-  it('does not show a not found message for an address book', () => {
-    renderBeforeLoad('/contacts/book1')
+  it('shows skeletons instead of a not found message for an address book', () => {
+    const { container } = renderBeforeLoad('/contacts/book1')
 
+    expect(hasSkeleton(container)).toBe(true)
     expect(screen.queryByText('Address book not found')).not.toBeInTheDocument()
     expect(screen.queryByText('No contacts yet')).not.toBeInTheDocument()
   })
 
-  it('does not show a not found message for a contact', () => {
-    renderBeforeLoad('/contacts/book1/c1')
+  it('shows skeletons instead of a not found message for a contact', () => {
+    const { container } = renderBeforeLoad('/contacts/book1/c1')
 
+    expect(hasSkeleton(container)).toBe(true)
+    expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled()
     expect(screen.queryByText('Contact not found')).not.toBeInTheDocument()
+  })
+
+  it('shows the form skeleton while creating a contact', () => {
+    const { container } = renderBeforeLoad('/contacts/new')
+
+    expect(hasSkeleton(container)).toBe(true)
+    expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled()
+  })
+
+  it('shows the form skeleton while editing a contact', () => {
+    const { container } = renderBeforeLoad('/contacts/book1/c1/edit')
+
+    expect(hasSkeleton(container)).toBe(true)
+    expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled()
   })
 })

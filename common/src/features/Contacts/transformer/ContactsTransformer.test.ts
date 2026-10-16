@@ -26,6 +26,11 @@ describe('normalizeAddressBook', () => {
     expect(normalizeAddressBook(book).canWrite).toBe(false)
   })
 
+  it('keeps an empty name when dav:name is missing', () => {
+    const book = { ...sharedBook(), 'dav:name': undefined }
+    expect(normalizeAddressBook(book).name).toBe('')
+  })
+
   it('flags the default book', () => {
     const book = {
       ...sharedBook(),

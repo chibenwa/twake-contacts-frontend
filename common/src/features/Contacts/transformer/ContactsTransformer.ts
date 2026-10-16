@@ -168,7 +168,7 @@ export function normalizeAddressBook(raw: DavAddressBookItem): AddressBook {
   return {
     id,
     userId,
-    name: raw['dav:name'] ?? id,
+    name: raw['dav:name'] ?? '',
     isDefault: isDefaultAddressBook(raw, id),
     contactsCount: raw.numberOfContacts ?? null,
     acl,

@@ -234,7 +234,7 @@ describe('CreateContactPage', () => {
     expect(addressBookSelect).toHaveTextContent('Book 1')
   })
 
-  it('lists own, then domain, then writable shared address books, like the sidebar', () => {
+  it('lists own, then writable shared address books, without the domain book', () => {
     renderPage(['/contacts/new'])
 
     fireEvent.mouseDown(screen.getByLabelText('Address book'))
@@ -246,7 +246,6 @@ describe('CreateContactPage', () => {
       'My contacts',
       'Book 1',
       'Book 2',
-      'Domain Address Book',
       'Shared',
       'Alpha SharedBob Owner'
     ])

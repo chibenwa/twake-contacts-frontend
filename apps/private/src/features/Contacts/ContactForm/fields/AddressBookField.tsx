@@ -32,13 +32,12 @@ export const AddressBookField: React.FC<AddressBookFieldProps> = ({
 }) => {
   const { t } = useI18n()
   const openpaasId = useAppSelector(state => state.user.userData.openpaasId)
-  // same grouping as the sidebar: own books, domain books, then the books
-  // shared with the user
+  // same grouping as the sidebar: own books, then the books shared with the
+  // user; the domain book is never listed
   const sortedBooks = sortAddressBooks(addressBooks, t)
   const ownBooks = sortedBooks.filter(book =>
     matchesScope(book, 'onlyMine', openpaasId)
   )
-  const domainBooks = sortedBooks.filter(book => book.id === 'dab')
   const sharedBooks = sortedBooks.filter(book =>
     matchesScope(book, 'shared', openpaasId)
   )
@@ -74,7 +73,6 @@ export const AddressBookField: React.FC<AddressBookFieldProps> = ({
           }}
         >
           {ownBooks.map(renderOption)}
-          {domainBooks.map(renderOption)}
           {sharedBooks.length > 0 && (
             <ListSubheader>{t('contacts.shared')}</ListSubheader>
           )}

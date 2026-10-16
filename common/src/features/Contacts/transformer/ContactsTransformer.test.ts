@@ -25,4 +25,28 @@ describe('normalizeAddressBook', () => {
     const book = { ...sharedBook(), 'dav:acl': ['dav:read'] }
     expect(normalizeAddressBook(book).canWrite).toBe(false)
   })
+
+  it('flags the default book', () => {
+    const book = {
+      ...sharedBook(),
+      _links: { self: { href: '/addressbooks/owner/contacts.json' } }
+    }
+    expect(normalizeAddressBook(book).isDefault).toBe(true)
+  })
+
+  it('flags a shared copy of a default book', () => {
+    const book = {
+      ...sharedBook(2),
+      'openpaas:source': '/addressbooks/owner/contacts.json'
+    }
+    expect(normalizeAddressBook(book).isDefault).toBe(true)
+  })
+
+  it('does not flag a shared copy of another book', () => {
+    const book = {
+      ...sharedBook(2),
+      'openpaas:source': '/addressbooks/owner/book.json'
+    }
+    expect(normalizeAddressBook(book).isDefault).toBe(false)
+  })
 })

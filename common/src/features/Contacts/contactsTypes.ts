@@ -6,6 +6,8 @@ export interface AddressBook {
   userId: string
   ownerId?: string
   name: string
+  // the owner's default book, its name is empty on the server
+  isDefault?: boolean
   // null when the server does not report it, as for shared books
   contactsCount: number | null
   acl: string[]

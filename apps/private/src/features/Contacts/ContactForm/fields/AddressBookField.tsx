@@ -1,5 +1,14 @@
-import { Grid, InputAdornment, MenuItem, TextField } from '@linagora/twake-mui'
+import {
+  Grid,
+  InputAdornment,
+  ListItemText,
+  ListSubheader,
+  MenuItem,
+  TextField
+} from '@linagora/twake-mui'
 import { Icon, People } from '@linagora/twake-icons'
+import { useAppSelector } from '@common/app/hooks'
+import { matchesScope } from '@common/features/Contacts/contactsSelectors'
 import { AddressBook } from '@common/features/Contacts/contactsTypes'
 import {
   getAddressBookDisplayName,
@@ -22,6 +31,23 @@ export const AddressBookField: React.FC<AddressBookFieldProps> = ({
   onChange
 }) => {
   const { t } = useI18n()
+  const openpaasId = useAppSelector(state => state.user.userData.openpaasId)
+  // same grouping as the sidebar: own books, then the books shared with the user
+  const sortedBooks = sortAddressBooks(addressBooks, t)
+  const isShared = (book: AddressBook): boolean =>
+    matchesScope(book, 'shared', openpaasId)
+  const ownBooks = sortedBooks.filter(book => !isShared(book))
+  const sharedBooks = sortedBooks.filter(isShared)
+
+  const renderOption = (book: AddressBook): React.ReactNode => (
+    <MenuItem key={book.id} value={book.id}>
+      <ListItemText
+        primary={getAddressBookDisplayName(book, t)}
+        secondary={book.ownerDisplayName}
+      />
+    </MenuItem>
+  )
+
   return (
     <FormRow>
       <Grid size={8}>
@@ -43,11 +69,11 @@ export const AddressBookField: React.FC<AddressBookFieldProps> = ({
             }
           }}
         >
-          {sortAddressBooks(addressBooks, t).map(book => (
-            <MenuItem key={book.id} value={book.id}>
-              {getAddressBookDisplayName(book, t)}
-            </MenuItem>
-          ))}
+          {ownBooks.map(renderOption)}
+          {sharedBooks.length > 0 && (
+            <ListSubheader>{t('contacts.shared')}</ListSubheader>
+          )}
+          {sharedBooks.map(renderOption)}
         </TextField>
       </Grid>
     </FormRow>

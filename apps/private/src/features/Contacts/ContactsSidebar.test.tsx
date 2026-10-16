@@ -3,16 +3,33 @@ import { DEFAULT_ADDRESS_BOOK_ID } from '@common/features/Contacts/constants'
 import { AddressBookWithContacts } from '@common/features/Contacts/contactsTypes'
 import { UserState } from '@common/features/User/UserSlice'
 import en from '@common/locales/en.json'
-import { TwakeMuiThemeProvider } from '@linagora/twake-mui'
+import { TwakeMuiThemeProvider, useBreakpoints } from '@linagora/twake-mui'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import I18n from 'twake-i18n'
 import { ContactsSidebar } from './ContactsSidebar'
 
-const makeBook = (id: string, name: string): AddressBookWithContacts => ({
+jest.mock('@linagora/twake-mui', () => ({
+  ...jest.requireActual('@linagora/twake-mui'),
+  useBreakpoints: jest.fn()
+}))
+
+const mockUseBreakpoints = useBreakpoints as jest.MockedFunction<
+  typeof useBreakpoints
+>
+
+const mockOnOpenCreateBook = jest.fn()
+const mockOnOpenSubscribe = jest.fn()
+
+const makeBook = (
+  id: string,
+  name: string,
+  ownerId = 'u1'
+): AddressBookWithContacts => ({
   id,
   userId: 'u1',
+  ownerId,
   name,
   contactsCount: 0,
   acl: [],
@@ -74,7 +91,15 @@ function renderSidebar(
         <I18n dictRequire={() => en} lang="en">
           <MemoryRouter initialEntries={[path]}>
             <Routes>
-              <Route path="/contacts" element={<ContactsSidebar />}>
+              <Route
+                path="/contacts"
+                element={
+                  <ContactsSidebar
+                    onOpenCreateBook={mockOnOpenCreateBook}
+                    onOpenSubscribe={mockOnOpenSubscribe}
+                  />
+                }
+              >
                 <Route path=":addressBookId" element={<div />} />
               </Route>
             </Routes>
@@ -87,6 +112,13 @@ function renderSidebar(
 }
 
 describe('ContactsSidebar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockUseBreakpoints.mockReturnValue({ isDesktop: true } as ReturnType<
+      typeof useBreakpoints
+    >)
+  })
+
   it('links create button to /contacts/new when no address book is selected', () => {
     renderSidebar('/contacts')
 
@@ -195,6 +227,74 @@ describe('ContactsSidebar', () => {
 
       expect(getMyContacts()).toHaveAttribute('aria-expanded', 'true')
       expect(screen.getByText('Book 1')).toBeInTheDocument()
+    })
+  })
+
+  describe('Shared dropdown', () => {
+    const renderWithSharedBooks = (): ReturnType<typeof render> =>
+      renderSidebar(
+        '/contacts',
+        Object.fromEntries(
+          [
+            makeBook(DEFAULT_ADDRESS_BOOK_ID, 'My contacts'),
+            makeBook('shared1', 'Alpha Shared', 'bob')
+          ].map(book => [book.id, book])
+        )
+      )
+
+    const getShared = (): HTMLElement =>
+      screen.getByRole('button', { name: en.contacts.shared })
+
+    it('exposes the toggle as a focusable button with its expanded state', () => {
+      renderWithSharedBooks()
+
+      expect(getShared()).toHaveAttribute('tabindex', '0')
+      expect(getShared()).toHaveAttribute('aria-expanded', 'true')
+      expect(screen.getByText('Alpha Shared')).toBeInTheDocument()
+    })
+
+    it('toggles shared books on click', () => {
+      renderWithSharedBooks()
+
+      fireEvent.click(getShared())
+
+      expect(getShared()).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.queryByText('Alpha Shared')).not.toBeInTheDocument()
+    })
+
+    it.each(['Enter', ' '])('toggles shared books with the %p key', key => {
+      renderWithSharedBooks()
+
+      fireEvent.keyDown(getShared(), { key })
+
+      expect(getShared()).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.queryByText('Alpha Shared')).not.toBeInTheDocument()
+
+      fireEvent.keyDown(getShared(), { key })
+
+      expect(getShared()).toHaveAttribute('aria-expanded', 'true')
+      expect(screen.getByText('Alpha Shared')).toBeInTheDocument()
+    })
+
+    it('opens the subscribe dialog without toggling shared books', () => {
+      renderWithSharedBooks()
+
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: en.contacts.addressBook.subscribeTitle
+        })
+      )
+
+      expect(mockOnOpenSubscribe).toHaveBeenCalledTimes(1)
+      expect(getShared()).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    it('does not expose a toggle when no book is shared', () => {
+      renderSidebar('/contacts')
+
+      expect(
+        screen.queryByRole('button', { name: en.contacts.shared })
+      ).not.toBeInTheDocument()
     })
   })
 })

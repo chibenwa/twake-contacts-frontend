@@ -1,4 +1,4 @@
-import React, { useId, useRef, useState } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 import {
   ActionsMenu,
   ActionsMenuItem,
@@ -20,17 +20,29 @@ interface RoleSelectorProps {
   value: AddressBookAccessLevel
   onChange: (role: AddressBookAccessLevel) => void
   disabled?: boolean
+  'aria-label'?: string
 }
 
 export const RoleSelector: React.FC<RoleSelectorProps> = ({
   value,
   onChange,
-  disabled = false
+  disabled = false,
+  'aria-label': ariaLabel
 }) => {
   const { t } = useI18n()
   const anchorRef = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
   const menuId = useId()
+  // Picking a role may disable the selector while it saves, which drops the
+  // focus to <body>: give it back once the selector is enabled again
+  const refocusOnEnableRef = useRef(false)
+
+  useEffect(() => {
+    if (!disabled && refocusOnEnableRef.current) {
+      refocusOnEnableRef.current = false
+      anchorRef.current?.focus()
+    }
+  }, [disabled])
   const roleKey = getRoleTranslationKey(value)
   const roles = [AddressBookAccessLevel.Editor, AddressBookAccessLevel.Viewer]
   // Only offer read-write for a sharee who already has it.
@@ -46,6 +58,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         size="small"
         color="inherit"
         disabled={disabled}
+        aria-label={ariaLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
@@ -65,7 +78,10 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
             key={role}
             role="menuitemradio"
             aria-checked={value === role}
-            onClick={() => onChange(role)}
+            onClick={() => {
+              refocusOnEnableRef.current = true
+              onChange(role)
+            }}
           >
             <ListItemIcon>
               <Icon

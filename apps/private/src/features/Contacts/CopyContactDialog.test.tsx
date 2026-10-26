@@ -45,7 +45,13 @@ const renderDialog = (
         dab: book('dab'),
         collected: book('collected'),
         readonly: book('readonly', false),
-        contacts: { ...book('contacts'), name: 'My contacts' }
+        contacts: { ...book('contacts'), name: 'My contacts' },
+        bobTeam: {
+          ...book('bobTeam'),
+          name: 'Alpha Bob Team',
+          ownerId: 'bob',
+          ownerDisplayName: 'bob bob'
+        }
       },
       listings: {},
       loading: false,
@@ -97,6 +103,18 @@ const selectDestination = (name = 'target'): void => {
   ).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('option', { name }))
 }
+
+it.each(['copy', 'move'] as const)(
+  'lists the %s destinations grouped like the sidebar, shared books last',
+  mode => {
+    renderDialog(mode)
+    fireEvent.mouseDown(screen.getByRole('combobox'))
+    expect(
+      screen.getAllByRole('option').map(option => option.textContent)
+    ).toEqual(['My contacts', 'target', 'Alpha Bob Teambob bob'])
+    expect(screen.getByText('Shared')).toHaveAttribute('role', 'presentation')
+  }
+)
 
 it.each(['copy', 'move'] as const)(
   'blocks %s from a read-only shared source before calling the API',

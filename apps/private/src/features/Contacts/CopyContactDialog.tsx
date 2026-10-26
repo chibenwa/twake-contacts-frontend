@@ -6,8 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  ListItemText,
-  MenuItem,
   Stack,
   TextField,
   Typography
@@ -22,11 +20,8 @@ import {
   AddressBookWithContacts,
   Contact
 } from '@common/features/Contacts/contactsTypes'
-import {
-  getAddressBookDisplayName,
-  sortAddressBooks,
-  isContactTransferDestination
-} from '@common/features/Contacts/contactsUtils'
+import { isContactTransferDestination } from '@common/features/Contacts/contactsUtils'
+import { renderAddressBookOptions } from './addressBookOptions'
 
 interface ContactTransferDialogProps {
   contact: Contact
@@ -51,15 +46,11 @@ const useContactTransfer = ({
   canTransfer: boolean
   transfer: () => Promise<void>
 } => {
-  const { t } = useI18n()
   const dispatch = useAppDispatch()
   const addressBooks = useAppSelector(state => state.contacts.addressBooks)
-  const books = sortAddressBooks(
-    Object.values(addressBooks).filter(
-      (book): book is AddressBookWithContacts =>
-        isContactTransferDestination(book, addressBookId)
-    ),
-    t
+  const books = Object.values(addressBooks).filter(
+    (book): book is AddressBookWithContacts =>
+      isContactTransferDestination(book, addressBookId)
   )
   const [destinationId, setDestinationId] = useState('')
   const [transferring, setTransferring] = useState(false)
@@ -121,6 +112,7 @@ export const ContactTransferDialog: React.FC<ContactTransferDialogProps> = ({
     canTransfer,
     transfer
   } = useContactTransfer({ contact, addressBookId, onClose, onSuccess, mode })
+  const openpaasId = useAppSelector(state => state.user.userData.openpaasId)
 
   return (
     <Dialog
@@ -150,14 +142,7 @@ export const ContactTransferDialog: React.FC<ContactTransferDialogProps> = ({
               disabled={transferring}
               onChange={event => setDestinationId(event.target.value)}
             >
-              {books.map(book => (
-                <MenuItem key={book.id} value={book.id}>
-                  <ListItemText
-                    primary={getAddressBookDisplayName(book, t)}
-                    secondary={book.ownerDisplayName}
-                  />
-                </MenuItem>
-              ))}
+              {renderAddressBookOptions(books, openpaasId, t)}
             </TextField>
           )}
         </Stack>
